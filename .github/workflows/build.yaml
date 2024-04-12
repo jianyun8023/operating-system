@@ -11,11 +11,12 @@ on:
         description: 'List of boards to build (comma separated identifiers)'
         required: false
         type: string
+        default: "panther-x2"
       publish:
         description: 'Publish build artifacts to R2 (not applicable to forks)'
-        required: true
+        required: false
         type: boolean
-        default: true
+        default: false
 
 env:
   PYTHON_VERSION: "3.10"
@@ -268,20 +269,6 @@ jobs:
             make -C buildroot O="/build/output" BR2_EXTERNAL="/build/buildroot-external" \
             BR2_CHECK_DOTCONFIG_OPTS="--github-format --strip-path-prefix=/build/" linux-check-dotconfig
 
-      - name: Upload artifacts
-        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build == 'true' }}
-        working-directory: output/images/
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_OS_ARTIFACTS_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_OS_ARTIFACTS_KEY }}
-        run: |
-          aws s3 sync \
-            ./ \
-            s3://${{ secrets.R2_OS_ARTIFACTS_BUCKET }}/${{ needs.prepare.outputs.version_full }}/ \
-            --exclude "*" \
-            --include "haos_*" \
-            --endpoint-url ${{ secrets.R2_OS_ARTIFACTS_ENDPOINT }}
-
       - name: Upload release assets
         if: ${{ github.event_name == 'release' }}
         uses: shogo82148/actions-upload-release-asset@v1
@@ -335,54 +322,6 @@ jobs:
           name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.raucb
           path: |
             output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.raucb
-
-      - name: Upload Open Virtualization Format (OVA) artifact
-        uses: actions/upload-artifact@v4
-        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'ova' }}
-        with:
-          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.ova
-          path: |
-            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.ova
-
-      - name: Upload QEMU disk image artifact
-        uses: actions/upload-artifact@v4
-        # Create artifact for ova every time - it's used by the called tests workflow
-        if: ${{ matrix.board.id == 'ova' || (github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'generic-aarch64') }}
-        with:
-          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.qcow2.xz
-          path: |
-            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.qcow2.xz
-
-      - name: Upload VMware Virtual Machine Disk (VMDK) artifact
-        uses: actions/upload-artifact@v4
-        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && (matrix.board.id == 'generic-aarch64' || matrix.board.id == 'ova') }}
-        with:
-          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vmdk.zip
-          path: |
-            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vmdk.zip
-
-      - name: Upload VirtualBox Virtual Disk Image (VDI) artifact
-        uses: actions/upload-artifact@v4
-        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'ova' }}
-        with:
-          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vdi.zip
-          path: |
-            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vdi.zip
-
-      - name: Upload Virtual Hard Disk v2 (VHDX) artifact
-        uses: actions/upload-artifact@v4
-        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'ova' }}
-        with:
-          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vhdx.zip
-          path: |
-            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vhdx.zip
-
-  test:
-    name: Test OS image
-    needs: [ build, prepare ]
-    uses: ./.github/workflows/test.yaml
-    with:
-      version: ${{ needs.prepare.outputs.version_full }}
 
   update_index:
     name: Update artifacts index
