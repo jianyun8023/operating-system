@@ -7,50 +7,80 @@ Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
 ===================================================================
 diff --git a/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi b/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi
 --- a/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi	(revision 8ef46eca64286a30e5a2c071db316b7b5ae42a68)
-+++ b/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi	(revision 4f527e346d731d035bed6b3571f4b05a28c89327)
-@@ -9,7 +9,7 @@
++++ b/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi	(revision ddffd602035f780078c9ec8a5ff63e466cfa1f22)
+@@ -9,107 +9,22 @@
  / {
  	chosen {
  		stdout-path = &uart2;
 -		u-boot,spl-boot-order = &sdmmc0, &sdhci, &spiflash;
-+		u-boot,spl-boot-order = &sdhci, &sdmmc0, &sdmmc1;
++		u-boot,spl-boot-order = &sdmmc0, &sdhci;
  	};
  };
- 
-@@ -28,10 +28,6 @@
- &emmc_datastrobe {
- 	bootph-all;
- };
+-
+-&emmc_bus8 {
+-	bootph-all;
+-};
+-
+-&emmc_clk {
+-	bootph-all;
+-};
+-
+-&emmc_cmd {
+-	bootph-all;
+-};
+-
+-&emmc_datastrobe {
+-	bootph-all;
+-};
 -
 -&fspi_pins {
 -	bootph-all;
 -};
+-
+-&pinctrl {
+-	bootph-all;
+-};
+-
+-&pcfg_pull_none {
+-	bootph-all;
+-};
+-
+-&pcfg_pull_up_drv_level_2 {
+-	bootph-all;
+-};
  
- &pinctrl {
- 	bootph-all;
-@@ -68,34 +64,29 @@
+-&pcfg_pull_up {
+-	bootph-all;
++&sfc {
++	status = "disabled";
+ };
+ 
+-&sdmmc0_bus4 {
+-	bootph-all;
+-};
+-
+-&sdmmc0_clk {
+-	bootph-all;
+-};
+-
+-&sdmmc0_cmd {
+-	bootph-all;
+-};
+-
+-&sdmmc0_det {
+-	bootph-all;
++&sdhci {
++	status = "okay";
+ };
+ 
  &sdmmc0 {
  	status = "okay";
  };
-+
-+&sdmmc1_bus4 {
-+    bootph-all;
-+};
-+&sdmmc1_cmd {
-+    bootph-all;
-+};
-+&sdmmc1_clk {
-+    bootph-all;
-+};
-+
-+&sdmmc1 {
-+    status = "okay";
-+};
  
- &sdhci {
- 	cap-mmc-highspeed;
- 	mmc-ddr-1_8v;
- 	mmc-hs200-1_8v;
+-&sdhci {
+-	cap-mmc-highspeed;
+-	mmc-ddr-1_8v;
+-	mmc-hs200-1_8v;
 -	mmc-hs400-1_8v;
 -	mmc-hs400-enhanced-strobe;
 -};
@@ -72,12 +102,24 @@ diff --git a/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi b/arch/arm/dts/rk3566-pa
 -	};
 -};
 -
--&sdmmc2 {
+ &sdmmc2 {
+ 	status = "disabled";
+-};
+-
+-&uart1 {
 -	status = "disabled";
-+    mmc-hs400-1_8v;
-+    mmc-hs400-enhanced-strobe;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&emmc_bus8 &emmc_clk &emmc_cmd &emmc_datastrobe>;
- };
- 
- &uart1 {
+-};
+-
+-&uart2m0_xfer {
+-	bootph-all;
+-};
+-
+-&uart2 {
+-	clock-frequency = <24000000>;
+-	bootph-all;
+-	u-boot,dm-pre-reloc;
+-	status = "okay";
+-};
+-
++};
+\ No newline at end of file
