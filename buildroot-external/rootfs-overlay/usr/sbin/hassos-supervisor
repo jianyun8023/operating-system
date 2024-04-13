@@ -47,7 +47,7 @@ if [ -z "${SUPERVISOR_IMAGE_ID}" ]; then
     # Get version from stable channel in case we have no local version
     # information.
     if [ "${SUPERVISOR_VERSION}" = "stable" ]; then
-        SUPERVISOR_VERSION="$(curl -s --location https://version.home-assistant.io/stable.json | jq -e -r '.supervisor')"
+        SUPERVISOR_VERSION="$(curl -s --location https://haos-version.jianyun.run/stable.json | jq -e -r '.supervisor')"
     fi
 
     echo "[WARNING] Supervisor image missing, downloading a fresh one: ${SUPERVISOR_VERSION}"
