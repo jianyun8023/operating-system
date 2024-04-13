@@ -9,7 +9,7 @@ HASSIO_LICENSE = Apache License 2.0
 # HASSIO_LICENSE_FILES = $(BR2_EXTERNAL_HASSOS_PATH)/../LICENSE
 HASSIO_SITE = $(BR2_EXTERNAL_HASSOS_PATH)/package/hassio
 HASSIO_SITE_METHOD = local
-HASSIO_VERSION_URL = "https://version.home-assistant.io/stable.json"
+HASSIO_VERSION_URL = "https://ha-version.jianyun.run/stable.json"
 
 HASSIO_CONTAINER_IMAGES_ARCH = supervisor dns audio cli multicast observer core
 
