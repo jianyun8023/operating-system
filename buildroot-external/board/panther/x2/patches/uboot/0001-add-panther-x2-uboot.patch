@@ -193,7 +193,7 @@ index 0000000000..933c22a188
 +			label = "eth";
 +			default-state = "off";
 +			gpios = <&gpio0 RK_PD5 GPIO_ACTIVE_HIGH>;
-+			function = LED_FUNCTION_LAN;
++			function = LED_FUNCTION_RX;
 +			pinctrl-names = "default";
 +			pinctrl-0 = <&led_eth_pin>;
 +			retain-state-suspended;
