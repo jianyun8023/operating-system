@@ -215,10 +215,8 @@ jobs:
           RAUC_CERTIFICATE: ${{ secrets.RAUC_CERTIFICATE }}
           RAUC_PRIVATE_KEY: ${{ secrets.RAUC_PRIVATE_KEY }}
         run: |
-          echo -e "-----BEGIN CERTIFICATE-----\n${RAUC_CERTIFICATE}\n-----END CERTIFICATE-----" > "${GITHUB_WORKSPACE}/cert.pem"
-          echo -e "-----BEGIN PRIVATE KEY-----\n${RAUC_PRIVATE_KEY}\n-----END PRIVATE KEY-----" > "${GITHUB_WORKSPACE}/key.pem"
-          ls ${GITHUB_WORKSPACE}
-          pwd ${GITHUB_WORKSPACE}
+          echo -e "-----BEGIN CERTIFICATE-----\n${RAUC_CERTIFICATE}\n-----END CERTIFICATE-----" > cert.pem
+          echo -e "-----BEGIN PRIVATE KEY-----\n${RAUC_PRIVATE_KEY}\n-----END PRIVATE KEY-----" > key.pem
 
       - name: Get self-signed certificate from the prepare job
         if: ${{ needs.prepare.outputs.self_signed_cert == 'true' }}
@@ -252,6 +250,7 @@ jobs:
         run: |
           BUILDER_UID="$(id -u)"
           BUILDER_GID="$(id -g)"
+          ls -la ${GITHUB_WORKSPACE}
           docker run --rm --privileged \
             -e BUILDER_UID="${BUILDER_UID}" -e BUILDER_GID="${BUILDER_GID}" \
             -v "${GITHUB_WORKSPACE}:/build" \
