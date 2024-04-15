@@ -285,7 +285,6 @@ jobs:
           echo "Cache size after pruning: $(du -sh /mnt/cache/cc)"
 
       - name: "Save cache: object files"
-        if: github.ref == 'refs/heads/dev'
         uses: actions/cache/save@v4
         with:
           path: /mnt/cache/cc
