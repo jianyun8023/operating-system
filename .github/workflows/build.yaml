@@ -217,6 +217,8 @@ jobs:
         run: |
           echo -e "-----BEGIN CERTIFICATE-----\n${RAUC_CERTIFICATE}\n-----END CERTIFICATE-----" > cert.pem
           echo -e "-----BEGIN PRIVATE KEY-----\n${RAUC_PRIVATE_KEY}\n-----END PRIVATE KEY-----" > key.pem
+          ls
+          pwd
 
       - name: Get self-signed certificate from the prepare job
         if: ${{ needs.prepare.outputs.self_signed_cert == 'true' }}
