@@ -1,15 +1,8 @@
-Subject: [PATCH] arch: arm: dts: panther: drop SPI NOR flash partitions
----
-Index: arch/arm/dts/rk3566-panther-x2-u-boot.dtsi
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
 diff --git a/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi b/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi
---- a/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi	(revision 83794fb732b13c1830f3a6f42551166d3b4e09ba)
-+++ b/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi	(revision 2dde89fe908a0265151ce21d61a4da1e684cd856)
+--- a/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi
++++ b/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi
 @@ -71,10 +71,7 @@
-
+ 
  &sdhci {
  	cap-mmc-highspeed;
 -	mmc-ddr-1_8v;
@@ -17,5 +10,5 @@ diff --git a/arch/arm/dts/rk3566-panther-x2-u-boot.dtsi b/arch/arm/dts/rk3566-pa
 -	mmc-hs400-1_8v;
 -	mmc-hs400-enhanced-strobe;
  };
-
+ 
  &sfc {

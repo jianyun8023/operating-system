@@ -1,20 +1,7 @@
-diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
-index e7728007fd1b..f8c9b7392735 100644
---- a/arch/arm64/boot/dts/rockchip/Makefile
-+++ b/arch/arm64/boot/dts/rockchip/Makefile
-@@ -75,6 +75,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-anbernic-rg353ps.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-anbernic-rg353v.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-anbernic-rg353vs.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-anbernic-rg503.dtb
-+dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-panther-x2.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-pinenote-v1.1.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-pinenote-v1.2.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-quartz64-a.dtb
 diff --git a/arch/arm64/boot/dts/rockchip/rk3566-panther-x2.dts b/arch/arm64/boot/dts/rockchip/rk3566-panther-x2.dts
 new file mode 100644
-index 000000000000..c887912f7c51
---- /dev/null
-+++ b/arch/arm64/boot/dts/rockchip/rk3566-panther-x2.dts
+--- /dev/null	(date 1741336516554)
++++ b/arch/arm64/boot/dts/rockchip/rk3566-panther-x2.dts	(date 1741336516554)
 @@ -0,0 +1,577 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -593,4 +580,15 @@ index 000000000000..c887912f7c51
 +&usb2phy0_otg {
 +	status = "okay";
 +};
-\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
+--- a/arch/arm64/boot/dts/rockchip/Makefile	(revision 41b222412985dc8410b88fb7a0fda87e6640d4df)
++++ b/arch/arm64/boot/dts/rockchip/Makefile	(date 1741336516531)
+@@ -86,6 +86,7 @@
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-odroid-m1s.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-orangepi-3b-v1.1.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-orangepi-3b-v2.1.dtb
++dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-panther-x2.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-pinenote-v1.1.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-pinenote-v1.2.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-pinetab2-v0.1.dtb
+
