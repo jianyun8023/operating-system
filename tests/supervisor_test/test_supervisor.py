@@ -16,7 +16,7 @@ def stash() -> dict:
 
 
 @pytest.mark.dependency()
-@pytest.mark.timeout(600)
+@pytest.mark.timeout(120)
 def test_start_supervisor(shell, shell_json):
     def check_container_running(container_name):
         out = shell.run_check(f"docker container inspect -f '{{{{.State.Status}}}}' {container_name} || true")
@@ -55,7 +55,7 @@ def test_check_supervisor(shell_json):
 
 
 @pytest.mark.dependency(depends=["test_check_supervisor"])
-@pytest.mark.timeout(300)
+@pytest.mark.timeout(120)
 def test_update_supervisor(shell_json):
     supervisor_info = shell_json("ha supervisor info --no-progress --raw-json")
     supervisor_version = supervisor_info.get("data").get("version")
@@ -153,7 +153,7 @@ def test_addon_uninstall(shell_json):
 
 
 @pytest.mark.dependency(depends=["test_supervisor_is_updated"])
-@pytest.mark.timeout(450)
+@pytest.mark.timeout(120)
 def test_restart_supervisor(shell, shell_json):
     result = shell_json("ha supervisor restart --no-progress --raw-json")
     assert result.get("result") == "ok", f"Supervisor restart failed: {result}"
@@ -190,6 +190,13 @@ def test_restore_ssl_directory(shell_json, stash):
     result = shell_json(f"ha backups restore {stash.get('slug')} --folders ssl --no-progress --raw-json")
     assert result.get("result") == "ok", f"Backup restore failed: {result}"
     logger.info("Backup restore result: %s", result)
+
+
+@pytest.mark.dependency(depends=["test_start_supervisor"])
+def test_no_apparmor_denies(shell):
+    """Check there are no AppArmor denies in the logs raised during Supervisor tests."""
+    output = shell.run_check("journalctl -t audit | grep DENIED || true")
+    assert not output, f"AppArmor denies found: {output}"
 
 
 @pytest.mark.dependency(depends=["test_start_supervisor"])
