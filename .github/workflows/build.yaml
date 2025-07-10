@@ -368,54 +368,6 @@ jobs:
           path: |
             output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.raucb
 
-      - name: Upload Open Virtualization Format (OVA) artifact
-        uses: actions/upload-artifact@v4
-        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'ova' }}
-        with:
-          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.ova
-          path: |
-            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.ova
-
-      - name: Upload QEMU disk image artifact
-        uses: actions/upload-artifact@v4
-        # Create artifact for ova every time - it's used by the called tests workflow
-        if: ${{ matrix.board.id == 'ova' || (github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'generic-aarch64') }}
-        with:
-          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.qcow2.xz
-          path: |
-            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.qcow2.xz
-
-      - name: Upload VMware Virtual Machine Disk (VMDK) artifact
-        uses: actions/upload-artifact@v4
-        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && (matrix.board.id == 'generic-aarch64' || matrix.board.id == 'ova') }}
-        with:
-          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vmdk.zip
-          path: |
-            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vmdk.zip
-
-      - name: Upload VirtualBox Virtual Disk Image (VDI) artifact
-        uses: actions/upload-artifact@v4
-        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'ova' }}
-        with:
-          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vdi.zip
-          path: |
-            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vdi.zip
-
-      - name: Upload Virtual Hard Disk v2 (VHDX) artifact
-        uses: actions/upload-artifact@v4
-        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'ova' }}
-        with:
-          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vhdx.zip
-          path: |
-            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vhdx.zip
-
-  test:
-    name: Test OS image
-    needs: [ build, prepare ]
-    uses: ./.github/workflows/test.yaml
-    with:
-      version: ${{ needs.prepare.outputs.version_full }}
-
   update_index:
     name: Update artifacts index
     if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build == 'true' }}
@@ -430,47 +382,3 @@ jobs:
       R2_OS_ARTIFACTS_ENDPOINT: ${{ secrets.R2_OS_ARTIFACTS_ENDPOINT }}
       CF_ZONE: ${{ secrets.CF_ZONE }}
       CF_PURGE_TOKEN: ${{ secrets.CF_PURGE_TOKEN }}
-
-  bump_version:
-    name: Bump ${{ needs.prepare.outputs.channel }} channel version
-    if: ${{ github.repository == 'home-assistant/operating-system' && needs.prepare.outputs.publish_build == 'true' }}
-    environment: ${{ needs.prepare.outputs.channel }}
-    needs: [ build, prepare ]
-    runs-on: ubuntu-22.04
-
-    steps:
-    - name: Checkout source
-      uses: actions/checkout@v4
-      with:
-        persist-credentials: false
-
-    - name: Initialize git
-      uses: home-assistant/actions/helpers/git-init@master
-      with:
-        name: ${{ secrets.GIT_NAME }}
-        email: ${{ secrets.GIT_EMAIL }}
-        token: ${{ secrets.GIT_TOKEN }}
-
-    - name: Bump Home Assistant OS ${{ needs.prepare.outputs.channel }} channel version
-      uses: home-assistant/actions/helpers/version-push@master
-      with:
-        key: "hassos[]"
-        key-description: "Home Assistant OS"
-        version: ${{ needs.prepare.outputs.version_full }}
-        channel: ${{ needs.prepare.outputs.channel }}
-
-    - name: Bump Home Assistant OS beta channel version on stable release
-      if: ${{ needs.prepare.outputs.channel == 'stable' }}
-      uses: home-assistant/actions/helpers/version-push@master
-      with:
-        key: "hassos[]"
-        key-description: "Home Assistant OS"
-        version: ${{ needs.prepare.outputs.version_full }}
-        channel: beta
-
-    - name: Bump stable Home Assistant version for RPi Imager
-      if: ${{ github.event_name == 'release' && needs.prepare.outputs.channel == 'stable' }}
-      uses: "./.github/actions/bump-rpi-imager-version"
-      with:
-        version: ${{ needs.prepare.outputs.version_full }}
-        release-date: ${{ github.event.release.published_at }}
