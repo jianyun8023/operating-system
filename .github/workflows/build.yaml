@@ -17,6 +17,11 @@ on:
         required: true
         type: boolean
         default: false
+      run_tests:
+        description: 'Run tests after build'
+        required: true
+        type: boolean
+        default: false
       hassio_channel:
         description: 'Release channel to use (default: stable for GH releases, dev otherwise)'
         type: choice
@@ -51,7 +56,7 @@ jobs:
       self_signed_cert: ${{ steps.generate_signing_key.outputs.self_signed_cert }}
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           persist-credentials: false
 
@@ -78,7 +83,7 @@ jobs:
           PUBLISH_BUILD: ${{ steps.check_publish.outputs.publish_build }}
         run: |
           version_dev="dev$(date --utc +'%Y%m%d')"
-          if [ "${{ env.PUBLISH_BUILD }}" != "true" ]; then
+          if [ "${{ env.PUBLISH_BUILD }}" != "true" ] || [ "${{ github.ref }}" != "refs/heads/dev" ]; then
             version_dev="dev$(date +%s)"
           fi
           echo "Development version \"${version_dev}\""
@@ -153,12 +158,21 @@ jobs:
             }
 
             const boardFilter = "${{ github.event.inputs.boards }}"
+            const runTests = "${{ github.event.inputs.run_tests }}" === "true"
+
             if (boardFilter == "") {
               console.log("Run full build for all boards")
               return { "board": boards }
             } else {
               console.log("Run partial build")
               const boardSet = new Set(boardFilter.split(","))
+
+              // if tests are enabled, we need to ensure the OVA board is included
+              if (runTests && !boardSet.has("ova")) {
+                console.log("Adding OVA board for integration tests")
+                boardSet.add("ova")
+              }
+
               const buildBoards = boards.filter(b => boardSet.has(b.id))
               return { "board": buildBoards }
             }
@@ -166,7 +180,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.11.1
       - name: Log in to the GitHub container registry
-        uses: docker/login-action@v3.4.0
+        uses: docker/login-action@v3.5.0
         with:
             registry: ghcr.io
             username: ${{ github.repository_owner }}
@@ -214,7 +228,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: true
           persist-credentials: false
@@ -247,7 +261,7 @@ jobs:
 
       - name: Get self-signed certificate from the prepare job
         if: ${{ needs.prepare.outputs.self_signed_cert == 'true' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: signing-key
 
@@ -339,6 +353,18 @@ jobs:
       - name: Generate build summary
         run: |
           echo "# ${{ matrix.board.id }} build summary" >> $GITHUB_STEP_SUMMARY
+          echo "## Built-in OS components" >> $GITHUB_STEP_SUMMARY
+          echo "Release channel: ${{ inputs.hassio_channel }} (${{ needs.prepare.outputs.hassio_channel_option }})" >> $GITHUB_STEP_SUMMARY
+          echo "| Container | Version |" >> $GITHUB_STEP_SUMMARY
+          echo "|:-|:-|" >> $GITHUB_STEP_SUMMARY
+          supervisor_version=$(jq -r ".supervisor" output/build/hassio-*/version.json)
+          landingpage_version=$(curl -fsSL https://api.github.com/repos/home-assistant/landingpage/releases/latest | jq -r '.tag_name')
+          echo "| supervisor | [${supervisor_version}](https://github.com/home-assistant/supervisor/releases/tag/${supervisor_version}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| landingpage | [${landingpage_version}](https://github.com/home-assistant/landingpage/releases/tag/${landingpage_version}) |" >> $GITHUB_STEP_SUMMARY
+          for plugin in dns audio cli multicast observer; do
+            version=$(jq -r ".${plugin}" output/build/hassio-*/version.json)
+            echo "| plugin-${plugin} | [${version}](https://github.com/home-assistant/plugin-${plugin}/releases/tag/${version}) |" >> $GITHUB_STEP_SUMMARY
+          done
           echo "## Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "| File | Size (bytes) | Size (formatted) |" >> $GITHUB_STEP_SUMMARY
           echo "|:-|:-|:-|" >> $GITHUB_STEP_SUMMARY
@@ -368,6 +394,55 @@ jobs:
           path: |
             output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.raucb
 
+      - name: Upload Open Virtualization Format (OVA) artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'ova' }}
+        with:
+          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.ova
+          path: |
+            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.ova
+
+      - name: Upload QEMU disk image artifact
+        uses: actions/upload-artifact@v4
+        # Create artifact for ova every time - it's used by the called tests workflow
+        if: ${{ matrix.board.id == 'ova' || (github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'generic-aarch64') }}
+        with:
+          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.qcow2.xz
+          path: |
+            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.qcow2.xz
+
+      - name: Upload VMware Virtual Machine Disk (VMDK) artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && (matrix.board.id == 'generic-aarch64' || matrix.board.id == 'ova') }}
+        with:
+          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vmdk.zip
+          path: |
+            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vmdk.zip
+
+      - name: Upload VirtualBox Virtual Disk Image (VDI) artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'ova' }}
+        with:
+          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vdi.zip
+          path: |
+            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vdi.zip
+
+      - name: Upload Virtual Hard Disk v2 (VHDX) artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build != 'true' && matrix.board.id == 'ova' }}
+        with:
+          name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vhdx.zip
+          path: |
+            output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vhdx.zip
+
+  test:
+    name: Test OS image
+    if: ${{ github.event_name == 'release' || inputs.run_tests == true }}
+    needs: [ build, prepare ]
+    uses: ./.github/workflows/test.yaml
+    with:
+      version: ${{ needs.prepare.outputs.version_full }}
+
   update_index:
     name: Update artifacts index
     if: ${{ github.event_name != 'release' && needs.prepare.outputs.publish_build == 'true' }}
@@ -382,3 +457,47 @@ jobs:
       R2_OS_ARTIFACTS_ENDPOINT: ${{ secrets.R2_OS_ARTIFACTS_ENDPOINT }}
       CF_ZONE: ${{ secrets.CF_ZONE }}
       CF_PURGE_TOKEN: ${{ secrets.CF_PURGE_TOKEN }}
+
+  bump_version:
+    name: Bump ${{ needs.prepare.outputs.channel }} channel version
+    if: ${{ github.repository == 'home-assistant/operating-system' && needs.prepare.outputs.publish_build == 'true' && (needs.prepare.outputs.channel != 'dev' || github.ref == 'refs/heads/dev') }}
+    environment: ${{ needs.prepare.outputs.channel }}
+    needs: [ build, prepare ]
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v5
+      with:
+        persist-credentials: false
+
+    - name: Initialize git
+      uses: home-assistant/actions/helpers/git-init@master
+      with:
+        name: ${{ secrets.GIT_NAME }}
+        email: ${{ secrets.GIT_EMAIL }}
+        token: ${{ secrets.GIT_TOKEN }}
+
+    - name: Bump Home Assistant OS ${{ needs.prepare.outputs.channel }} channel version
+      uses: home-assistant/actions/helpers/version-push@master
+      with:
+        key: "hassos[]"
+        key-description: "Home Assistant OS"
+        version: ${{ needs.prepare.outputs.version_full }}
+        channel: ${{ needs.prepare.outputs.channel }}
+
+    - name: Bump Home Assistant OS beta channel version on stable release
+      if: ${{ needs.prepare.outputs.channel == 'stable' }}
+      uses: home-assistant/actions/helpers/version-push@master
+      with:
+        key: "hassos[]"
+        key-description: "Home Assistant OS"
+        version: ${{ needs.prepare.outputs.version_full }}
+        channel: beta
+
+    - name: Bump stable Home Assistant version for RPi Imager
+      if: ${{ github.event_name == 'release' && needs.prepare.outputs.channel == 'stable' }}
+      uses: "./.github/actions/bump-rpi-imager-version"
+      with:
+        version: ${{ needs.prepare.outputs.version_full }}
+        release-date: ${{ github.event.release.published_at }}
