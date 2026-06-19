@@ -1,0 +1,11 @@
+[Unit]
+Description=HAOS Configuration Manager
+After=haos-bind.target network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/haos-config
+
+[Install]
+WantedBy=multi-user.target
+Alias=hassos-config.service

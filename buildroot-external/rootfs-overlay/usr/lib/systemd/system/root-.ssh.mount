@@ -2,7 +2,7 @@
 Description=Dropbear persistent user
 Requires=mnt-overlay.mount
 After=mnt-overlay.mount
-Before=dropbear.service hassos-config.service
+Before=dropbear.service haos-config.service
 
 [Mount]
 What=/mnt/overlay/root/.ssh
@@ -11,4 +11,4 @@ Type=None
 Options=bind
 
 [Install]
-WantedBy=hassos-bind.target
+WantedBy=haos-bind.target

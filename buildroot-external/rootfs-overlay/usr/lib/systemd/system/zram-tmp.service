@@ -1,5 +1,5 @@
 [Unit]
-Description=HassOS ZRAM tmp
+Description=HAOS ZRAM tmp
 DefaultDependencies=no
 Before=tmp.mount
 RefuseManualStart=true
@@ -7,9 +7,9 @@ RefuseManualStop=true
 
 [Service]
 Type=oneshot
-ExecStart=/usr/libexec/hassos-zram -t fs -m tmp -s 16M
+ExecStart=/usr/libexec/haos-zram -t fs -m tmp -s 16M
 RemainAfterExit=true
 StandardOutput=null
 
 [Install]
-WantedBy=hassos-zram.target
+WantedBy=haos-zram.target

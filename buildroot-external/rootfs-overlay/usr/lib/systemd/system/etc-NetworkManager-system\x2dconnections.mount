@@ -1,8 +1,8 @@
 [Unit]
 Description=NetworkManager persistent system connections
 Requires=mnt-overlay.mount
-After=mnt-overlay.mount hassos-overlay.service
-Before=NetworkManager.service hassos-config.service
+After=mnt-overlay.mount haos-overlay.service
+Before=NetworkManager.service haos-config.service
 
 [Mount]
 What=/mnt/overlay/etc/NetworkManager/system-connections
@@ -11,4 +11,4 @@ Type=None
 Options=bind
 
 [Install]
-WantedBy=hassos-bind.target
+WantedBy=haos-bind.target
