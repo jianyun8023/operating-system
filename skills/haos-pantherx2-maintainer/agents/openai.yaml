@@ -1,0 +1,4 @@
+interface:
+  display_name: "HAOS Panther X2 Maintainer"
+  short_description: "Maintain this HAOS Panther X2 fork"
+  default_prompt: "Use $haos-pantherx2-maintainer to upgrade Panther X2 to the next HAOS release."
