@@ -56,7 +56,7 @@ jobs:
       self_signed_cert: ${{ steps.generate_signing_key.outputs.self_signed_cert }}
     steps:
       - name: Checkout source
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
 
@@ -228,14 +228,14 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           submodules: true
           persist-credentials: false
 
       - name: Setup Python version ${{ env.PYTHON_VERSION }}
         if: ${{ github.event_name != 'release' }}
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -282,7 +282,7 @@ jobs:
           df -h
 
       - name: "Restore cache: object files"
-        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /mnt/cache/cc
           key: haos-cc-${{ matrix.board.id }}
@@ -330,7 +330,7 @@ jobs:
 
       - name: Upload release assets
         if: ${{ github.event_name == 'release' }}
-        uses: shogo82148/actions-upload-release-asset@ee2ae851dc5d938b90075b3ef12c540abfd1ee72 # v1.10.1
+        uses: shogo82148/actions-upload-release-asset@394b3c11c3cfc038b5396ad265c074065cf875c3 # v1.10.2
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: output/images/haos_*
@@ -345,7 +345,7 @@ jobs:
 
       - name: "Save cache: object files"
         if: github.ref == 'refs/heads/dev'
-        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: /mnt/cache/cc
           key: haos-cc-${{ matrix.board.id }}-${{ github.run_id }}
@@ -441,4 +441,3 @@ jobs:
           name: haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vhdx.zip
           path: |
             output/images/haos_${{ matrix.board.id }}-${{ needs.prepare.outputs.version_full }}.vhdx.zip
-  
