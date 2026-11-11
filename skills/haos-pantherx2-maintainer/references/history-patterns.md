@@ -10,6 +10,7 @@ Use this reference when upgrading Panther X2 to a new HAOS release or explaining
 - `84e20683d` (`2025-11-05`): Panther X2 added `BR2_PACKAGE_RNG_TOOLS=y`.
 - `f24ba290d` (`2026-06-19`): Panther X2 was updated to HAOS `18.0`: renamed `HASSOS` paths/functions to `HAOS`, changed boot args variable names from `bootargs_hassos` to `bootargs_haos`, moved kernel config from `v6.12.y` to `v6.18.y`, updated kernel `6.12.85 -> 6.18.35`, updated U-Boot `2025.01 -> 2026.04`, added MT7920/MT7925 firmware and `USBIP`.
 - `98efa1f27` (`2026-06-20`): Panther X2 kept/added AP6236 firmware package support through `BR2_PACKAGE_FIRMWARE_AP6236=y` and the `firmware_ap6236` package.
+- `326998feb` (`2026-10-28`): Panther X2 was already updated to HAOS `18.4`, with kernel `6.18.58`, EROFS deduplication disabled, A/B boot retry recovery aligned with Green, and release-only checksum signing. Verify the live fork branch before repeating any of these changes.
 
 ## Green Alignment Rule
 
